@@ -92,7 +92,7 @@ df_olympic %>% group_by(origin) %>% summarise(count = n()) %>% View()
 IMMIGRANT_COUNTRIES <- c("Great Britain", "Germany", "France", 
                          "Italy", "Norway", "Denmark", "Sweden", "Finland",
                          "Spain", "Portugal")
-MAX_YEARS <- c(1970, 1980, 1960, 1980, 1980, 1980, 1980, 1980, 1990, 1980)
+MAX_YEARS <- c(1970, 1980, 1970, 1980, 1980, 1980, 1980, 1980, 1980, 1980)
 
 res <- df_olympic %>% filter(!country %in% IMMIGRANT_COUNTRIES)
 for (i in 1:length(IMMIGRANT_COUNTRIES)){

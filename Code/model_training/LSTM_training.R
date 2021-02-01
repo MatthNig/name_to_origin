@@ -38,12 +38,13 @@ set.seed(26012021)
 # create training data
 athlete_sample <- read.csv("Data/athlete_sample.csv") %>% rename(full_name = Name) %>% select(-Year)
 inventor_sample <- read.csv("Data/inventor_sample.csv")
+inventor_sample <- filter(inventor_sample, !origin %in% c("Africa", "Philippines", "Greek", "Jewish"))
 df_train <- rbind(athlete_sample, inventor_sample)
 
 # subset to classes
 df_train$origin <- ifelse(df_train$origin == "Portugese", "Hispanic", df_train$origin)
 df_train$origin <- ifelse(df_train$origin == "Slavic", "Slawic", df_train$origin)
-df_train <- filter(df_train, !origin %in% c("Africa", "Philippines", "Greek", "Jewish"))
+# df_train <- filter(df_train, !origin %in% c("Africa", "Philippines", "Greek", "Jewish"))
 
 # summarize
 df_train %>% group_by(origin) %>% 
