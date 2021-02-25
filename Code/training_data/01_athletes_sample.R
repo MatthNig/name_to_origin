@@ -2,7 +2,7 @@
 # Description:    Script to construct a dataset consisting of olympic #
 #                 athletes name's which are labeled to ethnic origins #
 # Authors:        Matthias Niggli/CIEB UniBasel                       #
-# Date:           24.01.2021                                          #
+# Date:           25.02.2021                                          #
 #######################################################################
 
 #######################################
@@ -47,15 +47,14 @@ origins <- c(rep("Slavic-Russian", 3),
              rep("SouthEastAsia", 6), 
              rep("Scandinavian", 5), 
              "Persian", 
-             rep("Hispanic-Iberian", 2), 
-             "Portugese",
+             rep("Hispanic-Iberian", 3), 
              "Japan", 
              "German", 
              "China", 
              "India", 
              "Turkey", 
              rep("AngloSaxon", 2), 
-             "Korea")
+             rep("Korea", 2))
 
 countries <- c("Russia", "Ukraine", "Belarus",
                "Poland", "Hungary", "Czechoslovakia", 
@@ -69,8 +68,7 @@ countries <- c("Russia", "Ukraine", "Belarus",
                countrycode(c("FI", "SE", "DK", "NO", "IS"),origin = "iso2c",
                            destination = "country.name.en"),
                "Iran", 
-               "Spain", "Mexico", 
-               "Portugal",
+               "Spain", "Mexico", "Portugal",
                "Japan", 
                "Germany", 
                "China", 
@@ -78,7 +76,7 @@ countries <- c("Russia", "Ukraine", "Belarus",
                "Turkey", 
                "Ireland", 
                "Great Britain", 
-               "Korea")
+               "South Korea", "North Korea")
   
 ref_list <- data.frame(origin = origins, country = countries)
 
@@ -121,10 +119,10 @@ downsample_fun <- function(df, area, N){
 }
 df_olympic <- downsample_fun(df = df_olympic,
                              area = "EastEurope",
-                             N = 4000)
+                             N = 3500)
 df_olympic <- downsample_fun(df = df_olympic,
                              area = "Scandinavian",
-                             N = 3000)
+                             N = 3500)
 df_olympic %>% group_by(origin) %>% summarize(count = n(),
                                               share = count/nrow(df_olympic))
 
