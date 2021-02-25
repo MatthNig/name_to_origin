@@ -43,7 +43,7 @@ df_train <- rbind(athlete_sample, inventor_sample)
 
 # subset to classes
 df_train$origin <- ifelse(df_train$origin == "Portugese", "Hispanic", df_train$origin)
-df_train$origin <- ifelse(df_train$origin == "Slavic", "Slawic", df_train$origin)
+df_train$origin <- ifelse(df_train$origin == "Slawic", "Slavic", df_train$origin)
 # df_train <- filter(df_train, !origin %in% c("Africa", "Philippines", "Greek", "Jewish"))
 
 # summarize

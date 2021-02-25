@@ -54,7 +54,7 @@ print("Prepared dataframe to store origin predictions from name-prism.")
 
 ## NOT RUN: Get name-prism predictions for all names
 
-for(i in 2665:nrow(test_sample)){
+for(i in 1:nrow(test_sample)){
   api_url <- paste0("http://www.name-prism.com/api_token/",
                     pred_type, "/", response_format, "/",
                     API_nameprism, "/", test_sample$full_name_encoded[i])

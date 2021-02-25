@@ -28,7 +28,7 @@ set.seed(24012021)
 ## Load & process data ##
 #########################
 
-# Olympic Athletes data
+#### Olympic Athletes data
 df_olympic <- read.csv(paste0(datDir, "/athlete_events.csv"))
 df_olympic <- df_olympic %>% distinct(ID, .keep_all = TRUE) %>% 
   select(Name, Team, Year)
@@ -39,7 +39,7 @@ df_olympic <- filter(df_olympic,
 
 #### create dictionary to assign nationalities to ethnic origins: -----------------
 
-origins <- c(rep("Slawic", 3), 
+origins <- c(rep("Slavic-Russian", 3), 
              rep("EastEurope", 3), 
              rep("Balkans", 3), 
              rep("Arabic", 8), 
@@ -47,7 +47,7 @@ origins <- c(rep("Slawic", 3),
              rep("SouthEastAsia", 6), 
              rep("Scandinavian", 5), 
              "Persian", 
-             rep("Hispanic", 2), 
+             rep("Hispanic-Iberian", 2), 
              "Portugese",
              "Japan", 
              "German", 
@@ -82,13 +82,13 @@ countries <- c("Russia", "Ukraine", "Belarus",
   
 ref_list <- data.frame(origin = origins, country = countries)
 
-# subset athletes from these countries and assign ethnic origin:
+# subset to athletes from these countries and assign ethnic origin:
 df_olympic <- df_olympic %>% filter(Team %in% ref_list$country) %>% rename(country = Team)
 df_olympic <- left_join(df_olympic, ref_list, by = "country")            
 
 df_olympic %>% group_by(origin) %>% summarise(count = n()) %>% View()
 
-# filter athletes from immigrant countries to pre-1975: 
+#### subset athletes from immigrant countries to pre-immigration periods: 
 IMMIGRANT_COUNTRIES <- c("Great Britain", "Germany", "France", 
                          "Italy", "Norway", "Denmark", "Sweden", "Finland",
                          "Spain", "Portugal")
@@ -105,13 +105,13 @@ res <- NULL
 df_olympic %>% group_by(origin) %>% summarize(count = n(),
                                               share = count/nrow(df_olympic))
 
-# Scandinavia is over-representeted 
+#### Balance the ethnic origin distribution
+# Scandinavia & East-European athletes are over-representeted 
 # Downsample ~ the mean number of western counties' shares
 df_olympic %>% filter(origin %in% c("AngloSaxon", "German", "French", 
-                                    "HispanicLatinAmerica", "Italian",
+                                    "Hispanic-Iberian", "Italian",
                                     "Scandinavian")) %>%
   group_by(origin) %>% summarize(count = n())
-
 downsample_fun <- function(df, area, N){
   tmp <- df %>% filter(origin == area)
   tmp <- tmp %>% sample_n(size = N)
@@ -122,14 +122,13 @@ downsample_fun <- function(df, area, N){
 df_olympic <- downsample_fun(df = df_olympic,
                              area = "EastEurope",
                              N = 4000)
-
 df_olympic <- downsample_fun(df = df_olympic,
                              area = "Scandinavian",
                              N = 3000)
 df_olympic %>% group_by(origin) %>% summarize(count = n(),
                                               share = count/nrow(df_olympic))
 
-## process names
+#### process athletes' names
 df_olympic$Name <- trimws(df_olympic$Name)
 df_olympic$Name <- tolower(df_olympic$Name)
 df_olympic$Name <- gsub("[[:punct:]]", "", df_olympic$Name)
@@ -144,7 +143,7 @@ special_chars <- unique(special_chars)
 special_chars <- special_chars[is.na(special_chars) == FALSE]
 if(length(special_chars) == 0){print("No non-Latin characters in names")}
 
-# save the data for training the models: -------------------------------------
+#### save the data for training the models: -------------------------------------
 write.csv(df_olympic %>% select(-country), 
           file = "Data/athlete_sample.csv", row.names = FALSE)
 

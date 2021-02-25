@@ -36,8 +36,8 @@ origins <- c("Balkans", "Arabic", "Italian", "EastEurope",
              "SouthEastAsia", "Jewish", "CentralAsia", "SouthEastAsia",
              "Scandinavian", "SouthEastAsia", "Scandinavian", "Persian", 
              "Scandinavian", "Arabic", "Greek", 
-             "Arabic", "Hispanic", "Slavic", "Arabic", "Africa", "Japan",
-             "German", "China", "India", "Hispanic", "Scandinavian", "Turkey",
+             "Arabic", "Hispanic-Iberian", "Slavic-Russian", "Arabic", "Africa", "Japan",
+             "German", "China", "India", "Hispanic-Iberian", "Scandinavian", "Turkey",
              "Philippines", "AngloSaxon", "SouthEastAsia", "Korea", "Africa",
              "EastEurope", "SouthEastAsia")
 ref_list$origin_group <- origins
