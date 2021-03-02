@@ -12,8 +12,12 @@
 # packages for data processing: ------------------------------------------------
 library("tidyverse")
 
+# directories 
+path = "C:/Users/Matthias/Documents/GithubRepos/name_to_origin"
+setwd(path)
+
 # Data -------------------------------------------------------------------------
-df <- read.csv("Data/API_verification_sample.csv")
+df <- read.csv("Data/nameprism_stratified_sample.csv")
 
 ######################################################################
 ### Assign NamePrism Leaf Nationalities to Ethnic Origins ############
