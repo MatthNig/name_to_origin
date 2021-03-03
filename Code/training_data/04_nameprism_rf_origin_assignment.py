@@ -154,16 +154,15 @@ print("Overall accuracy of the Random Forest classifier is ",
 print("Improvment against not using a model is ", 
       round((rf_base_acc - acc) * 100, 1), "percentage points") # 18.4pp
 
-
 #################################
 ##### Hyperparamater Tuning #####
 #################################
 
 # define random grid
 N_TREE = [x for x in range(200, 2200, 200)]
-MAX_FEATURES = ['auto', 'sqrt']
-MIN_SPLIT = [2, 5, 7, 10]
-MIN_LEAF = [1, 2, 3, 4]
+MAX_FEATURES = ['auto', 'sqrt', 8, 12]
+MIN_SPLIT = [2, 5, 10]
+MIN_LEAF = [1, 2, 5, 10]
 RF_GRID = {"n_estimators": N_TREE, "max_features": MAX_FEATURES,
            "min_samples_split": MIN_SPLIT, "min_samples_leaf": MIN_LEAF}
 
@@ -171,7 +170,7 @@ RF_GRID = {"n_estimators": N_TREE, "max_features": MAX_FEATURES,
 rf = RandomForestClassifier() 
 rf_random = RandomizedSearchCV(estimator = rf, 
                                param_distributions = RF_GRID, 
-                               n_iter = 100, cv = 3, verbose = 2, 
+                               n_iter = 50, cv = 3, verbose = 2, 
                                random_state = 28022021)
 
 # # use subsample for testing the code
@@ -211,9 +210,6 @@ print("Overall accuracy of the Random Forest classifier with weights is ",
 print("Improvment against not using weights is ", 
       round((rf_random_weight_acc - rf_random_acc) * 100, 1), "percentage points") # 18.4pp
 
-# => Weights do not improve the model's performance much
-
-
 ##################################
 ###### Save the best model #######
 ##################################
@@ -227,44 +223,6 @@ else:
     print("Save random forest model without sample weights.")
     WEIGHTS = "no_weights"
 
-joblib.dump(rf_save, 
-            path + "/Classification_models/rf_origin_assignment_" + WEIGHTS + ".joblib")
+joblib.dump(rf_save, path + "/Classification_models/rf_origin_assignment_" + WEIGHTS + "_compressed.joblib", compress = 5)
 
-###############################################
-###### Subsampling to increase accuracy #######
-###############################################
-
-max_proba = pd.DataFrame(rf_save.predict_proba(x_test)).max(axis = 1)
-print("Mean of highest class probability is: ", round(100 * max_proba.mean(), 1), "%") # 78.8%
-print("Minimum of highest class probability is: ", round(100 * max_proba.min(), 1), "%") # 11.8%
-print("Median of highest class probability is: ", round(100 * max_proba.median(), 1), "%") # 88.3%
-
-
-THRESHOLD = [x / 100 for x in range(40, 75, 5)]
-ACCURACIES = []
-SAMPLE_FRACTION = []
-for THRES in THRESHOLD:
-    y_pred_thres = rf_save.predict(x_test)
-    y_pred_thres = y_pred_thres[max_proba > THRES]
-    y_test_thres = y_test[max_proba > THRES]
-    
-    thres_acc = metrics.accuracy_score(y_test_thres, y_pred_thres)
-    sample_fraction = len(y_test_thres) / len(y_test)
-    
-    print("Threshold of", THRES, "drops", round(100 * (1 - sample_fraction), 1), "% of samples.") #22.9%
-    print("Overall accuracy with probability threshold of", THRES, "is", round(thres_acc * 100, 1), "%")
-    
-    ACCURACIES.append(thres_acc)
-    SAMPLE_FRACTION.append(sample_fraction)
-
-if WEIGHTS == "weights":
-    ACC = rf_random_weight_acc
-else:
-    ACC = rf_random_acc
-
-
-eval_df = pd.DataFrame({"Threshold": ["None"] + THRESHOLD,
-              "Accuracy": [ACC] + ACCURACIES, 
-              "Sample_Fraction": [0] + SAMPLE_FRACTION})
-
-print(eval_df)
+print("Best performing model saved.")
