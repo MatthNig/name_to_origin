@@ -133,9 +133,9 @@ sub_res = sub_res.iloc[np.where(sub_res.dist_second >= THRES_DIST_SECOND)]
 sub_res = sub_res.iloc[np.where(sub_res.pred_entropy <= THRES_ENTROPY)]
 acc_threshold = metrics.accuracy_score(sub_res["true_origin"], sub_res['predicted_origin_encoded'])
 print("Imposing thresholds drops ", 
-      round(100 * (1 - len(sub_res) / len(res)), 1), "% of samples.") # 38%
+      round(100 * (1 - len(sub_res) / len(res)), 1), "% of samples.") # 38.3%
 print("Overall accuracy imposing thresholds is", 
-      round(acc_threshold * 100, 1), "%") # 83%
+      round(acc_threshold * 100, 1), "%") # 83.0%
 
 #################################
 ###### Train RandomForest #######
@@ -152,7 +152,7 @@ rf_base_acc = metrics.accuracy_score(y_test, y_pred)
 print("Overall accuracy of the Random Forest classifier is ", 
       round(rf_base_acc * 100, 1), "%") # 84.6%
 print("Improvment against not using a model is ", 
-      round((rf_base_acc - acc) * 100, 1), "percentage points") # 18.4pp
+      round((rf_base_acc - acc) * 100, 1), "percentage points") # 18.3pp
 
 #################################
 ##### Hyperparamater Tuning #####
@@ -186,9 +186,9 @@ rf_best_random = rf_random.best_estimator_
 y_pred = rf_best_random.predict(x_test)
 rf_random_acc = metrics.accuracy_score(y_test, y_pred)
 print("Overall accuracy of the tuned Random Forest classifier is ", 
-      round(rf_random_acc * 100, 1), "%") #xx.x%
+      round(rf_random_acc * 100, 1), "%") #85.0%
 print("Improvment against baseline random forest is ", 
-      round((rf_random_acc - rf_base_acc) * 100, 1), "percentage points") # xx.x pp
+      round((rf_random_acc - rf_base_acc) * 100, 1), "percentage points") # 0.4pp
 
 #####################################################
 ###### Try sample weights to imporve learning #######
@@ -198,7 +198,7 @@ print("Improvment against baseline random forest is ",
 y_pred = rf_best_random.predict(x_train) # predict on training sample
 train_acc = metrics.accuracy_score(y_train, y_pred)
 print("Accuracy on the training sample is ",
-      round(train_acc * 100, 1), "%") # 95.1%
+      round(train_acc * 100, 1), "%") # 99.1%
 
 WEIGHTS = np.where(y_pred == y_train, 1, 1-train_acc)
 rf_best_random_weights = rf_best_random.fit(X = x_train, y = y_train, sample_weight = WEIGHTS)
@@ -206,9 +206,9 @@ rf_best_random_weights = rf_best_random.fit(X = x_train, y = y_train, sample_wei
 y_pred = rf_best_random_weights.predict(x_test) # predict on test sample
 rf_random_weight_acc = metrics.accuracy_score(y_test, y_pred)
 print("Overall accuracy of the Random Forest classifier with weights is ", 
-      round(rf_random_weight_acc * 100, 1), "%") # 84.4%
+      round(rf_random_weight_acc * 100, 1), "%") # 85.0%
 print("Improvment against not using weights is ", 
-      round((rf_random_weight_acc - rf_random_acc) * 100, 1), "percentage points") # 18.4pp
+      round((rf_random_weight_acc - rf_random_acc) * 100, 1), "percentage points") # 0.0 pp
 
 ##################################
 ###### Save the best model #######
