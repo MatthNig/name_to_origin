@@ -249,15 +249,16 @@ for PROBA in PROBAS:
               metrics = ["accuracy"])
         
         CALLBACK = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', 
-                                            patience = 3, 
+                                            patience = 2, 
                                             restore_best_weights = True)
         
         hist = model.fit(x = x_train, y = y_train,
-                         epochs = 5, batch_size = 64,
-                         callbacks= CALLBACK, verbose = 0,
-                         validation_data = (x_test, y_test))
+                         epochs = 7, batch_size = 64,
+                         callbacks= [CALLBACK], 
+                         verbose = 0,
+                         validation_data = (x_val, y_val))
         
-        ACC = round(model.evaluate(x_test, y_test)[1], 3)
+        ACC = round(model.evaluate(x_val, y_val)[1], 3)
         threshold_eval.loc[len(threshold_eval)] = [PROBA, DIST, 2, SAMPLE_FRACTION, ACC]
         
 print("Evaluation based on LSTM model performance completed. Performance: ")
