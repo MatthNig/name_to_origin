@@ -32,7 +32,7 @@ print("Directories specified")
 
 # model
 rf = joblib.load(path + "/Classification_models/rf_origin_assignment_no_weights_compressed.joblib")
-rf.get_params()
+print(rf.get_params())
 
 # data
 df = pd.read_csv(path+"/Data/nameprism_stratified_sample.csv")
@@ -57,6 +57,17 @@ print('Testing Labels Shape:', y_test.shape)
 ###### Subsampling based on highest class probability to increase accuracy ###################
 ##############################################################################################
 
+""" # best parameters from hyperparameter tuning:
+# 'max_features': 'auto', 'min_samples_leaf': 1, min_samples_split': 2, 'n_estimators': 1400
+rf = RandomForestClassifier(n_estimators = 1400, max_features = "auto",
+                            min_samples_split = 2, min_samples_leaf = 1,
+                            random_state= 28022021)
+rf = rf.fit(X = x_train, y = y_train)
+y_pred = rf.predict(x_test)
+rf_acc = metrics.accuracy_score(y_test, y_pred)
+print("Overall accuracy of the tuned Random Forest classifier is ", 
+      round(rf_acc * 100, 1), "%") #84.9%
+ """
 max_proba = pd.DataFrame(rf.predict_proba(x_test)).max(axis = 1)
 print("Mean of highest class probability is: ", round(100 * max_proba.mean(), 1), "%") # 79.3%
 print("Minimum of highest class probability is: ", round(100 * max_proba.min(), 1), "%") # 11.8%
