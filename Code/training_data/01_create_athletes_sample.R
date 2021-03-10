@@ -74,8 +74,7 @@ countries <- c("Russia", "Ukraine", "Belarus",
                "China", 
                "India", 
                "Turkey", 
-               "Ireland", 
-               "Great Britain", 
+               "Ireland", "Great Britain", 
                "South Korea", "North Korea")
   
 ref_list <- data.frame(origin = origins, country = countries)
@@ -83,8 +82,6 @@ ref_list <- data.frame(origin = origins, country = countries)
 # subset to athletes from these countries and assign ethnic origin:
 df_olympic <- df_olympic %>% filter(Team %in% ref_list$country) %>% rename(country = Team)
 df_olympic <- left_join(df_olympic, ref_list, by = "country")            
-
-df_olympic %>% group_by(origin) %>% summarise(count = n()) %>% View()
 
 #### subset athletes from immigrant countries to pre-immigration periods: 
 IMMIGRANT_COUNTRIES <- c("Great Britain", "Germany", "France", 
@@ -101,11 +98,11 @@ for (i in 1:length(IMMIGRANT_COUNTRIES)){
 df_olympic <- res
 res <- NULL
 df_olympic %>% group_by(origin) %>% summarize(count = n(),
-                                              share = count/nrow(df_olympic))
+                                              share = count / nrow(df_olympic))
 
 #### Balance the ethnic origin distribution
 # Scandinavia & East-European athletes are over-representeted 
-# Downsample ~ the mean number of western counties' shares
+# Downsample to ~ the mean number of western counties' shares
 df_olympic %>% filter(origin %in% c("AngloSaxon", "German", "French", 
                                     "Hispanic-Iberian", "Italian",
                                     "Scandinavian")) %>%

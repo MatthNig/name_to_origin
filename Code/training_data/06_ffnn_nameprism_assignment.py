@@ -81,7 +81,7 @@ print("Searching through",
 
 
 FFNN_random = RandomizedSearchCV(estimator = ff_network, param_distributions = FFNN_GRID, 
-                        n_iter = 3, cv = 3, verbose = 0, random_state = 10032021)
+                        n_iter = 50, cv = 3, verbose = 0, random_state = 10032021)
 
 FFNN_random = FFNN_random.fit(x_train, y_train)
 
@@ -92,6 +92,6 @@ y_pred = FFNN_random.best_estimator_.predict(x_test)
 FFNN_acc = metrics.accuracy_score(y_test, y_pred)
 f1 = metrics.f1_score(y_true = y_test, y_pred = y_pred, average = "weighted")
 print("Overall accuracy of the best Feed-Forward Neural Network is ", 
-      round(FFNN_acc * 100, 1), "%") # xx.x%
+      round(FFNN_acc * 100, 1), "%") # 82.8%
 print("Weighted F1 score of Feed-Forward Neural Network is: ", 
-      round(f1 * 100, 1), "%") # xx.x%
+      round(f1 * 100, 1), "%") # 82.7%

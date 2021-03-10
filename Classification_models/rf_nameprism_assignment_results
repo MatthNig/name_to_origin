@@ -1,0 +1,18 @@
+All packages loaded.
+Directories specified
+Training Features Shape: (10020, 39)
+Training Labels Shape: (10020,)
+Testing Features Shape: (2506, 39)
+Testing Labels Shape: (2506,)
+Overall accuracy of the Random Forest classifier is  84.6 %
+Weighted F1 score of Random Forest Classifier is:  84.5 %
+Searching through 360 parameter combinations.
+Parameters of the tuned random forest: 
+{'n_estimators': 1200, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'auto'}
+Overall accuracy of the tuned Random Forest classifier is  84.9 %
+Improvment against baseline random forest is  0.4 percentage points
+Weighted F1 score of tuned Random Forest Classifier is:  84.9 %
+Accuracy on the training sample is  99.1 %
+Overall accuracy of the Random Forest classifier with weights is  84.9 %
+Improvment against not using weights is  0.0 percentage points
+Weighted F1 score of Random Forest Classifier with weights is:  84.9 %

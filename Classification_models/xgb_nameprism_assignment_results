@@ -1,0 +1,13 @@
+All packages loaded.
+Directories specified
+Training Features Shape: (10020, 39)
+Training Labels Shape: (10020,)
+Testing Features Shape: (2506, 39)
+Testing Labels Shape: (2506,)
+Overall accuracy of the XGBoost is  85.2 %
+Weighted F1 score of XGBoost is:  85.1 %
+Searching through 450 parameter combinations.
+Parameters of the tuned XGBoost: 
+{'n_estimators': 140, 'min_child_weight': 3, 'max_depth': 3, 'learning_rate': 0.1}
+Overall accuracy of the tuned XGBoost is  85.2 %
+Weighted F1 score of XGBoost is:  85.1 %

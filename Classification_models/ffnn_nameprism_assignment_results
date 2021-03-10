@@ -1,0 +1,11 @@
+All packages loaded.
+Directories specified
+Training Features Shape: (10020, 39)
+Training Labels Shape: (10020,)
+Testing Features Shape: (2506, 39)
+Testing Labels Shape: (2506,)
+Searching through 96 parameter combinations.
+Parameters of the tuned network: 
+{'units': 512, 'optimizer': 'rmsprop', 'epochs': 30, 'batch_size': 64, 'activation': 'relu'}
+Overall accuracy of the best Feed-Forward Neural Network is  82.8 %
+Weighted F1 score of Feed-Forward Neural Network is:  82.7 %

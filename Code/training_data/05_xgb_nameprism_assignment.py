@@ -84,16 +84,16 @@ xgb_random = RandomizedSearchCV(estimator = xgb_model,
                                random_state = 8032021)
 xgb_random = xgb_random.fit(X = x_train, y = y_train)
 print("Parameters of the tuned XGBoost: ")
-print(rf_random.best_params_) # 'n_estimators': 'auto', 'max_depth': 1, learning_rate': 
+print(xgb_random.best_params_) # ''n_estimators': 140, 'min_child_weight': 3, 'max_depth': 3, 'learning_rate': 0.1: 
 
 
 xgb_best_random = xgb_random.best_estimator_
 y_pred = xgb_best_random.predict(x_test)
 xgb_random_acc = metrics.accuracy_score(y_test, y_pred)
 print("Overall accuracy of the tuned XGBoost is ", 
-      round(xgb_random_acc * 100, 1), "%") # xx.x%
+      round(xgb_random_acc * 100, 1), "%") # 85.2%
 f1 = metrics.f1_score(y_true = y_test, y_pred = y_pred, average = "weighted")
 print("Weighted F1 score of XGBoost is: ", 
-      round(f1 * 100, 1), "%") # xx.x%
+      round(f1 * 100, 1), "%") # 85.1%
 print("Best parameters of the tuned XGBoost are:")
 print(xgb_random.best_params_)
