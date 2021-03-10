@@ -299,8 +299,8 @@ print(xgb_random.best_params_)
 ###### Train FF Neural Network #######
 ######################################
 
-#tf.random.set_seed(8032021)
-tf.random.set_random_seed(8032021) # TF1 on the cluster
+tf.random.set_seed(8032021)
+#tf.random.set_random_seed(8032021) # TF1 on the cluster
 
 res = pd.DataFrame(columns=["EPOCHS", "BATCH_SIZE", "NODES", "ACTIV", "acc", "f1"])
 
@@ -347,9 +347,9 @@ FFNN_acc = res["acc"].max()
 idx = np.argmax(res["acc"])
 print("Best network parameters: \n", res.iloc[idx, :4])
 print("Overall accuracy of the best Feed-Forward Neural Network is ", 
-      round(FFNN_acc * 100, 1), "%") # 81.5%
+      round(FFNN_acc * 100, 1), "%") # xx.x%
 print("Weighted F1 score of Feed-Forward Neural Network is: ", 
-      round(f1 * 100, 1), "%") # 81.3%
+      round(f1 * 100, 1), "%") # xx.x%
 
 
 
