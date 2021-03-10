@@ -1,6 +1,6 @@
 #########################################################################
-# Description:    Script to determin optimal prediction thresholds	    #
-#                 in order to use samples for learning.			            #
+# Description:    Script to determine optimal prediction thresholds	    #
+#                 in order to use samples for learning.		            #
 # Authors:        Matthias Niggli/CIEB UniBasel                         #
 # Last Revised:   04.03.2021                                            #
 #########################################################################
@@ -13,26 +13,22 @@
 import numpy as np
 import pandas as pd
 
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
 from sklearn import preprocessing
+from sklearn import metrics
+
+from sklearn.model_selection import RandomizedSearchCV
+import xgboost as xgb
 print("All packages loaded.")
 
-# import joblib
-
 #### Set directory ---------------------------------------------------------
-# path = "C:/Users/Matthias/Documents/GithubRepos/name_to_origin"
+#path = "C:/Users/Matthias/Documents/GithubRepos/name_to_origin"
 path = "/scicore/home/weder/nigmat01/name_to_origin"
 print("Directories specified")
 
 ##################################################
 ###### Load data and trained RF model ############
 ##################################################
-
-# model
-rf = joblib.load(path + "/Classification_models/rf_origin_assignment_no_weights_compressed.joblib")
-print(rf.get_params())
 
 # data
 df = pd.read_csv(path+"/Data/nameprism_stratified_sample.csv")
@@ -43,7 +39,7 @@ response = np.array(df["origin_encoded"])
 features = np.array(df.drop(["Name", "Year", "full_name_encoded", "origin", "origin_encoded"], axis = 1))
 indices = np.arange(len(df))
 
-# use only those samples the RF did not use for training:
+# use only those samples the XGB did not use for training:
 x_train, x_test, y_train, y_test, idx_train, idx_test = train_test_split(
     features, response, indices,
     test_size = 0.2, random_state = 25022021)
@@ -57,28 +53,28 @@ print('Testing Labels Shape:', y_test.shape)
 ###### Subsampling based on highest class probability to increase accuracy ###################
 ##############################################################################################
 
-""" # best parameters from hyperparameter tuning:
-# 'max_features': 'auto', 'min_samples_leaf': 1, min_samples_split': 2, 'n_estimators': 1400
-rf = RandomForestClassifier(n_estimators = 1400, max_features = "auto",
-                            min_samples_split = 2, min_samples_leaf = 1,
-                            random_state= 28022021)
-rf = rf.fit(X = x_train, y = y_train)
-y_pred = rf.predict(x_test)
-rf_acc = metrics.accuracy_score(y_test, y_pred)
-print("Overall accuracy of the tuned Random Forest classifier is ", 
-      round(rf_acc * 100, 1), "%") #84.9%
- """
-max_proba = pd.DataFrame(rf.predict_proba(x_test)).max(axis = 1)
-print("Mean of highest class probability is: ", round(100 * max_proba.mean(), 1), "%") # 79.3%
-print("Minimum of highest class probability is: ", round(100 * max_proba.min(), 1), "%") # 11.8%
-print("Median of highest class probability is: ", round(100 * max_proba.median(), 1), "%") # 88.9%
+# best parameters from hyperparameter tuning the XGB:
+# {'n_estimators': 140, 'min_child_weight': 3, 'max_depth': 3, 'learning_rate': 0.1}
+xgb_model = xgb.XGBClassifier(random_state = 8032021, n_estimators = 140,
+                            learning_rate = 0.1, min_child_weight = 3, max_depth = 3)
+xgb_model.fit(X = x_train, y = y_train)
+
+y_pred = xgb_model.predict(x_test)
+acc = metrics.accuracy_score(y_test, y_pred)
+f1 = metrics.f1_score(y_true = y_test, y_pred = y_pred, average = "weighted")
+print("Overall accuracy of the tuned XGBoost is ", 
+      round(acc * 100, 1), "%") # 85.2%
+print("Weighted F1 score of the tuned XGBoost is: ", 
+      round(f1 * 100, 1), "%") # 85.1%
+
+max_proba = pd.DataFrame(xgb_model.predict_proba(x_test)).max(axis = 1)
+print("Mean of highest class probability is: ", round(100 * max_proba.mean(), 1), "%") # 85.5%
+print("Minimum of highest class probability is: ", round(100 * max_proba.min(), 1), "%") # 13.1%
+print("Median of highest class probability is: ", round(100 * max_proba.median(), 1), "%") # 95.0%
 
 THRESHOLD = [x / 100 for x in range(40, 75, 5)]
 ACCURACIES = []
 SAMPLE_FRACTION = []
-y_pred = rf.predict(x_test)
-
-ACC = metrics.accuracy_score(y_test, y_pred)
 
 for THRES in THRESHOLD:
     y_pred_thres = y_pred[max_proba > THRES]
@@ -86,15 +82,12 @@ for THRES in THRESHOLD:
     
     thres_acc = metrics.accuracy_score(y_test_thres, y_pred_thres)
     sample_fraction = len(y_test_thres) / len(y_test)
-    
-    # print("Threshold of", THRES, "drops", round(100 * (1 - sample_fraction), 1), "% of samples.") #22.9%
-    # print("Overall accuracy with probability threshold of", THRES, "is", round(thres_acc * 100, 1), "%")
-    
+  
     ACCURACIES.append(thres_acc)
     SAMPLE_FRACTION.append(sample_fraction)
 
 eval_df = pd.DataFrame({"min_proba": ["No"] + THRESHOLD,
-              "Accuracy": [ACC] + ACCURACIES, 
+              "Accuracy": [acc] + ACCURACIES, 
               "Sample_Fraction": [1] + SAMPLE_FRACTION})
 print(eval_df)
 eval_df.to_csv(path + "/Classification_models/max_proba_thresholds.csv")
@@ -104,7 +97,7 @@ print("Evaluation results for minimum probability thresholds saved.")
 ###### Subsampling based on additional metrics to increase accuracy ######
 ##########################################################################
 
-class_probas = rf.predict_proba(x_test)
+class_probas = xgb_model.predict_proba(x_test)
 
 # difference to second highest origin probability
 max_proba = [max(x) for x in class_probas]
@@ -133,7 +126,7 @@ def acc_evaluate(MAX_PROBA, DIST_SECOND, ENTRO):
     return(res_out)
 
 # define threshold values to evaluate
-PROBAS = [0, 0.45, 0.5, 0.55, 0.6]
+PROBAS = [0, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 DISTANCES = [0, 0.2, 0.3, 0.4, 0.5] 
 ENTROPIES = [10, 2, 1.75]
 
@@ -208,7 +201,7 @@ print("Validation set defined.")
 
 # define training samples & get their RF predictions
 train_samples_idx = [i for i in idx_test if i not in val_idx]
-train_samples_proba = rf.predict_proba(features[train_samples_idx])
+train_samples_proba = xgb_model.predict_proba(features[train_samples_idx])
 
 max_proba = [max(x) for x in train_samples_proba]
 pred_second = [sorted(x)[-2] for x in train_samples_proba]
@@ -231,7 +224,7 @@ threshold_eval = pd.DataFrame(None,
 print("Training set of", len(dat_eval), "samples defined.")
 
 # define thresholds
-PROBAS = [0, 0.45, 0.5, 0.55, 0.6]
+PROBAS = [0, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
 DISTANCES = [0, 0.2, 0.3, 0.4, 0.5] 
 
 # train model with different training samples according to thresholds and save accuracies
