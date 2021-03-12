@@ -123,20 +123,3 @@ print("Improvment against not using weights is ",
       round((rf_random_weight_acc - rf_random_acc) * 100, 1), "percentage points") # 0.0 pp
 print("Weighted F1 score of Random Forest Classifier with weights is: ", 
       round(f1 * 100, 1), "%") # xx.x%
-
-
-""" # (4) Save the best Random Forest model --------------------------------------------------------
-
-if rf_random_weight_acc > rf_random_acc:
-    rf_save = rf_best_random_weights
-    print("Save random forest model with sample weights.")
-    WEIGHTS = "weights"
-else: 
-    rf_save = rf_best_random
-    print("Save random forest model without sample weights.")
-    WEIGHTS = "no_weights"
-
-joblib.dump(rf_save, path + "/Classification_models/rf_origin_assignment_" + WEIGHTS + "_compressed.joblib", compress = 5)
-
-print("Best performing random forest model saved.")
- """

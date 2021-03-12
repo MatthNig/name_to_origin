@@ -140,7 +140,7 @@ if(length(special_chars) == 0){print("No non-Latin characters in names")}
 
 #### save the data for training the models: -------------------------------------
 write.csv(df_olympic %>% select(-country), 
-          file = "Data/athlete_sample.csv", row.names = FALSE)
+          file = "Data/01_athlete_sample.csv", row.names = FALSE)
 
 
 

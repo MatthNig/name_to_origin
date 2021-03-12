@@ -29,13 +29,13 @@ set.seed(24012021)
 #########################
 
 ## olympic athletes:
-df_olympic <- read.csv("Data/athlete_sample.csv")
+df_olympic <- read.csv("Data/01_athlete_sample.csv")
 
 ## Specify desired number of samples per ethnic origin:
 min_N <- 750
 
 ## previously sampled names from name-prism -------
-pre_accessed <- read.csv("Data/nameprism_random_sample,csv")
+pre_accessed <- read.csv("Data/02_nameprism_random_sample,csv")
 pre_accessed <- pre_accessed %>% mutate(origin = case_when(origin == "Slawic" ~ "Slavic-Russian",
                                                            origin == "Hispanic" ~ "Hispanic-Iberian",
                                                            origin == "Portugese" ~ "Hispanic-Iberian",
@@ -74,7 +74,7 @@ tmp <- NULL
 test_sample$full_name_encoded <- gsub(" ", "%20", x = test_sample$Name)
 
 ## specify the API-Token and URL -----------------------------------------------
-API_nameprism <- "8cf1f0d395a1daac"
+API_nameprism <- "XXXXXXXXXXXXXXXXXXXXXXX"
 pred_type = "nat"
 response_format = "json"
 
@@ -117,7 +117,7 @@ tmp %>% group_by(origin) %>%
 ## Save the verification set ##
 ###############################
 
-write.csv(x = tmp, file = "Data/nameprism_stratified_sample.csv", row.names = FALSE)
+write.csv(x = tmp, file = "Data/03_nameprism_stratified_sample.csv", row.names = FALSE)
 
 
 

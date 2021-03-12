@@ -2,7 +2,7 @@
 # Description:    Script to determine optimal prediction thresholds	    #
 #                 in order to use samples for learning.		            #
 # Authors:        Matthias Niggli/CIEB UniBasel                         #
-# Last Revised:   04.03.2021                                            #
+# Last Revised:   11.03.2021                                            #
 #########################################################################
 
 ##################################################
@@ -22,9 +22,13 @@ import xgboost as xgb
 print("All packages loaded.")
 
 #### Set directory ---------------------------------------------------------
-#path = "C:/Users/Matthias/Documents/GithubRepos/name_to_origin"
-path = "/scicore/home/weder/nigmat01/name_to_origin"
-print("Directories specified")
+import os
+path = "C:/Users/Matthias/Documents/GithubRepos/name_to_origin"
+if os.path.isdir(path) == False:
+    path = "/scicore/home/weder/nigmat01/name_to_origin"
+if os.path.isdir(path):
+    print("Directories specified")
+else: print("Could not find directory")
 
 ##################################################
 ###### Load data and trained RF model ############
@@ -74,6 +78,7 @@ print("Median of highest class probability is: ", round(100 * max_proba.median()
 
 THRESHOLD = [x / 100 for x in range(40, 75, 5)]
 ACCURACIES = []
+F1 = []
 SAMPLE_FRACTION = []
 
 for THRES in THRESHOLD:
@@ -81,17 +86,37 @@ for THRES in THRESHOLD:
     y_test_thres = y_test[max_proba > THRES]
     
     thres_acc = metrics.accuracy_score(y_test_thres, y_pred_thres)
+    thres_f1 = metrics.f1_score(y_test_thres, y_pred_thres, average = "weighted")
     sample_fraction = len(y_test_thres) / len(y_test)
   
     ACCURACIES.append(thres_acc)
+    F1.append(thres_f1)
     SAMPLE_FRACTION.append(sample_fraction)
 
 eval_df = pd.DataFrame({"min_proba": ["No"] + THRESHOLD,
-              "Accuracy": [acc] + ACCURACIES, 
+              "Accuracy": [acc] + ACCURACIES,
+              "F1": [f1] + F1, 
               "Sample_Fraction": [1] + SAMPLE_FRACTION})
 print(eval_df)
-eval_df.to_csv(path + "/Classification_models/max_proba_thresholds.csv")
+eval_df.to_csv(path + "/Data/training_evaluation_results/05a_max_proba_thresholds.csv")
 print("Evaluation results for minimum probability thresholds saved.")
+
+# group shares ----------------------
+group_shares = pd.Series(y_test).value_counts()/len(y_test)
+group_shares = group_shares.sort_index()
+groups = pd.DataFrame(columns = ["ethnic origin", "baseline_share", "threshold", "N_samples", "sample_share"])
+
+for THRES in THRESHOLD:
+    N_samples = pd.Series(y_pred[max_proba > THRES])
+    N_samples = N_samples.value_counts().sort_index()
+    sample_share = [x / sum(N_samples) for x in N_samples]
+    
+    tmp = pd.DataFrame({"ethnic origin": N_samples.index, "baseline_share": list(group_shares),
+                    "threshold": [THRES] * len(sample_share), "N_samples": list(N_samples), 
+                    "sample_share": sample_share})
+    groups = groups.append(tmp)
+groups.to_csv(path + "/Data/training_evaluation_results/05b_max_proba_group_sizes.csv")
+print("Group size evaluation for minimum probability thresholds saved.")
 
 ##########################################################################
 ###### Subsampling based on additional metrics to increase accuracy ######
@@ -110,6 +135,23 @@ entro = [-1 * np.nansum(x) for x in entro]
 
 dat_eval = pd.DataFrame({"max_proba": max_proba, "dist_second": dist_second, "entro": entro})
 
+# group shares
+groups = pd.DataFrame(columns = ["ethnic origin", "baseline_share", "min_proba", 
+                                "min_distance", "max_entropy", "N_samples", "sample_share"])
+def group_size_eval(MAX_PROBA, DIST_SECOND, ENTRO):
+    tmp = dat_eval[(dat_eval["max_proba"] >= MAX_PROBA) &
+                   (dat_eval["entro"] <= ENTRO) &
+                   (dat_eval["dist_second"] >= DIST_SECOND)]
+    
+    N_samples = pd.Series(y_pred[tmp.index])
+    N_samples = N_samples.value_counts().sort_index()
+    sample_share = [x / sum(N_samples) for x in N_samples]
+    
+    tmp = pd.DataFrame({"ethnic origin": N_samples.index, "baseline_share": list(group_shares),
+                    "min_proba": MAX_PROBA, "min_distance": DIST_SECOND, "max_entropy": ENTRO,
+                    "N_samples": list(N_samples), "sample_share": sample_share})
+    return(tmp)
+
 def acc_evaluate(MAX_PROBA, DIST_SECOND, ENTRO):
     tmp = dat_eval[(dat_eval["max_proba"] >= MAX_PROBA) &
                    (dat_eval["entro"] <= ENTRO) &
@@ -119,10 +161,11 @@ def acc_evaluate(MAX_PROBA, DIST_SECOND, ENTRO):
     y_test_thres = y_test[tmp.index]
     
     thres_acc = metrics.accuracy_score(y_test_thres, y_pred_thres)
+    thres_f1 = metrics.f1_score(y_test_thres, y_pred_thres, average = "weighted")
     sample_fraction = len(y_test_thres) / len(y_test)
     
     res_out = [MAX_PROBA, DIST_SECOND, ENTRO, 
-               round(sample_fraction, 3), round(thres_acc, 3)]
+               round(sample_fraction, 3), round(thres_acc, 3), round(thres_f1, 3)]
     return(res_out)
 
 # define threshold values to evaluate
@@ -132,7 +175,7 @@ ENTROPIES = [10, 2, 1.75]
 
 res = pd.DataFrame(None, columns = ["min_proba", "min_distance",
                                     "max_entropy", "sample_fraction",
-                                    "accuracy"])
+                                    "accuracy", "f1"])
 
 # check accuracies for threshold combinations
 for PROBA in PROBAS:
@@ -140,11 +183,14 @@ for PROBA in PROBAS:
         for ENTROP in ENTROPIES:
             res_out = acc_evaluate(MAX_PROBA=PROBA, DIST_SECOND=DIST, ENTRO = ENTROP)
             res.loc[len(res)] = res_out
+            groups_out = group_size_eval(MAX_PROBA=PROBA, DIST_SECOND=DIST, ENTRO = ENTROP)
+            groups = groups.append(groups_out)
             
-res = res.sort_values("accuracy", ascending = False)
-res.to_csv(path + "/Classification_models/indicator_thresholds.csv")
-print(res.head())
+res = res.sort_values("f1", ascending = False)
+res.to_csv(path + "/Data/training_evaluation_results/05c_indicator_thresholds.csv")
 print("Evaluation results for indicator thresholds saved.")
+groups.to_csv(path + "/Data/training_evaluation_results/05d_indicator_thresholds_group_sizes.csv")
+print("Group size evaluation for indicator thresholds saved.")
 
 ##############################################
 ###### Use LSTM to check accuracies ##########
@@ -267,7 +313,7 @@ for PROBA in PROBAS:
         
 print("Evaluation based on LSTM model performance completed. Performance: ")
 print(threshold_eval)
-threshold_eval.to_csv(path + "/Classification_models/LSTM_performances.csv")
+threshold_eval.to_csv(path + "/Data/training_evaluation_results/06_LSTM_performances.csv")
 
 
 
